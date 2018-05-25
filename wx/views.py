@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 import time
 import requests
 import json
-from server.settings import global_var
+from server.settings import global_var, ChatBotSession
 
 
 def checksignature(request):
@@ -42,7 +42,7 @@ def reply(request):
                '<CreateTime>%d</CreateTime> ' \
                '<MsgType>text</MsgType> <Content>' \
                '%s</Content>' \
-               '</xml> ' % (msg['FromUserName'], msg['ToUserName'], time.time(), msg['Content'])
+               '</xml> ' % (msg['FromUserName'], msg['ToUserName'], time.time(), ChatBotSession.chat(msg['Content']))
     return HttpResponse(response)
 
 

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os, socket
 from . import secret
+import chat.model.chat as ChatBot
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -130,3 +131,6 @@ global_var = {
     'wx_token_expire_time': 0,
     'wx_token': ''
 }
+
+
+ChatBotSession = ChatBot.ChatSession()

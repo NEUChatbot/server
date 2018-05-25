@@ -1,0 +1,3 @@
+[submodule "chat/model"]
+	path = chat/model
+	url = git@github.com:NEUChatbot/new-model.git
