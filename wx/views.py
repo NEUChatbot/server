@@ -38,11 +38,12 @@ def registered(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     global server_address
-    server_address = ip
+    server_address = 'http://' + ip + ':4321'
     return HttpResponse(ip)
 
 
 def send_to_server(id, question):
+    print(":::send to chat server {} {}".format(id, question))
     requests.post(server_address, data={'id': id, 'question': question})
 
 
@@ -50,21 +51,27 @@ def send_to_server(id, question):
 def get_replay_from_server(request):
     id = request.POST.get('id')
     content = request.POST.get('content')
+    print(":::resieve form server {} {}".format(id, content))
     response_queue[id] = content
 
 
 def reply(request):
-    data = request.body
+    data = request.body.decode()
+    print(data)
     msg = untangle.parse(data).xml
     id = msg.MsgId.cdata
-    response_msg = '聊天服务器暂时无法提供服务:('
-    if server_address and requests.get(server_address).content == 'ok':
-        send_to_server(id, msg.Content.cdata)
-        cache[msg.MsgId.cdata] = msg
-        start_time = time.time()
-        while time.time() - start_time < 15 and response_queue.get(id, None) is None:
-            pass
-        response_msg = response_queue.get(id, '聊天服务器暂时无法提供服务:(')
+    print(":::message id {}".format(id))
+    try:
+        print(server_address)
+        if server_address and requests.get(server_address).content == b'ok':
+            print(":::server ok")
+            send_to_server(id, msg.Content.cdata)
+            start_time = time.time()
+            while time.time() - start_time < 15 and response_queue.get(id, None) is None:
+                pass
+            response_msg = response_queue.pop(id)
+    except Exception as e:
+        response_msg = '聊天服务器暂时无法提供服务:(' + repr(e)
     response = '<xml> ' \
                '<ToUserName>%s</ToUserName> ' \
                '<FromUserName>%s</FromUserName> ' \
@@ -92,6 +99,8 @@ def get_token(request):
 @csrf_exempt
 def wx(request):
     if request.method == 'GET':
+        print('get')
         return checksignature(request)
     elif request.method == 'POST':
+        print('post')
         return reply(request)
