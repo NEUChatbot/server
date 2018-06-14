@@ -15,15 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from wx.views import wx, get_token
 from server.func import deploy
 import web.views
+import wx.views
 
 urlpatterns = [
     path('', web.views.index),
     path('admin/', admin.site.urls),
-    path('wx/', wx),
-    path('wx/token', get_token),
+    path('wx/', wx.views.wx),
+    path('wx/token', wx.views.get_token),
     path('wx/responsechat', wx.views.get_replay_from_server),
     path('wx/registered', wx.views.registered),
     path('deploy/', deploy),
