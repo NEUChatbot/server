@@ -2,11 +2,15 @@ import hashlib
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .secret import secret
-import xml.etree.ElementTree as ET
+import untangle
 import time
 import requests
 import json
 from server.settings import global_var
+
+server_address = None
+cache = dict()
+response_queue = dict()
 
 
 def checksignature(request):
@@ -27,22 +31,47 @@ def checksignature(request):
     return HttpResponse('Fail')
 
 
+def registered(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    global server_address
+    server_address = ip
+    return HttpResponse(ip)
+
+
+def send_to_server(id, question):
+    requests.post(server_address, data={'id': id, 'question': question})
+
+
+@csrf_exempt
+def get_replay_from_server(request):
+    id = request.POST.get('id')
+    content = request.POST.get('content')
+    response_queue[id] = content
+
+
 def reply(request):
     data = request.body
-    print(data)
-    tree = ET.fromstring(data)
-    msg = {}
-    for t in tree:
-        msg[t.tag] = t.text
-    # if msg['MsgType'] != 'text':
-    #     msg['Content'] = '不支持的消息类型: %s' % msg['MsgType']
+    msg = untangle.parse(data).xml
+    id = msg.MsgId.cdata
+    response_msg = '聊天服务器暂时无法提供服务:('
+    if server_address and requests.get(server_address).content == 'ok':
+        send_to_server(id, msg.Content.cdata)
+        cache[msg.MsgId.cdata] = msg
+        start_time = time.time()
+        while time.time() - start_time < 15 and response_queue.get(id, None) is None:
+            pass
+        response_msg = response_queue.get(id, '聊天服务器暂时无法提供服务:(')
     response = '<xml> ' \
                '<ToUserName>%s</ToUserName> ' \
                '<FromUserName>%s</FromUserName> ' \
                '<CreateTime>%d</CreateTime> ' \
                '<MsgType>text</MsgType> <Content>' \
                '%s</Content>' \
-               '</xml> ' % (msg['FromUserName'], msg['ToUserName'], time.time(), ChatBotSession.chat(msg['Content']))
+               '</xml> ' % (msg.FromUserName.cdata, msg.ToUserName.cdata, time.time(), response_msg)
     return HttpResponse(response)
 
 

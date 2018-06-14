@@ -24,6 +24,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('wx/', wx),
     path('wx/token', get_token),
+    path('wx/responsechat', wx.views.get_replay_from_server),
+    path('wx/registered', wx.views.registered),
     path('deploy/', deploy),
     path('whatismyip', web.views.whatismyip)
 ]
