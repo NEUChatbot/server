@@ -17,12 +17,13 @@ from django.contrib import admin
 from django.urls import path
 from wx.views import wx, get_token
 from server.func import deploy
-from web.views import index
+import web.views
 
 urlpatterns = [
-    path('', index),
+    path('', web.views.index),
     path('admin/', admin.site.urls),
     path('wx/', wx),
     path('wx/token', get_token),
-    path('deploy/', deploy)
+    path('deploy/', deploy),
+    path('whatismyip', web.views.whatismyip)
 ]

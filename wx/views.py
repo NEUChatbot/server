@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 import time
 import requests
 import json
-from server.settings import global_var, ChatBotSession
+from server.settings import global_var
 
 
 def checksignature(request):
