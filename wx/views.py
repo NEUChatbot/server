@@ -61,15 +61,13 @@ def reply(request):
     msg = untangle.parse(data).xml
     id = msg.MsgId.cdata
     print(":::message id {}".format(id))
+    response_msg = '聊天服务器暂时无法提供服务:('
     try:
         print(server_address)
         if server_address and requests.get(server_address).content == b'ok':
             print(":::server ok")
-            send_to_server(id, msg.Content.cdata)
-            start_time = time.time()
-            while time.time() - start_time < 15 and response_queue.get(id, None) is None:
-                pass
-            response_msg = response_queue.pop(id)
+            response_msg = requests.post(server_address,
+                                         data={'id': id, 'question': msg.Content.cdata}).content.decode()
     except Exception as e:
         response_msg = '聊天服务器暂时无法提供服务:(' + repr(e)
     response = '<xml> ' \
