@@ -71,11 +71,11 @@ def reply(request):
     except Exception as e:
         response_msg = '聊天服务器暂时无法提供服务:(' + repr(e)
     response = '<xml> ' \
-               '<ToUserName>%s</ToUserName> ' \
-               '<FromUserName>%s</FromUserName> ' \
+               '<ToUserName><![CDATA[%s]]></ToUserName> ' \
+               '<FromUserName><![CDATA[%s]]></FromUserName> ' \
                '<CreateTime>%d</CreateTime> ' \
                '<MsgType>text</MsgType> <Content>' \
-               '%s</Content>' \
+               '<![CDATA[%s]]></Content>' \
                '</xml> ' % (msg.FromUserName.cdata, msg.ToUserName.cdata, time.time(), response_msg)
     return HttpResponse(response)
 
