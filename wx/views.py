@@ -66,7 +66,7 @@ def reply(request):
         print(server_address)
         if server_address and requests.get(server_address).content == b'ok':
             print(":::server ok")
-            response_msg = requests.post(server_address,
+            response_msg = requests.post(server_address, timeout=5,
                                          data={'id': id, 'question': msg.Content.cdata}).content.decode()
     except Exception as e:
         response_msg = '聊天服务器暂时无法提供服务:(' + repr(e)
